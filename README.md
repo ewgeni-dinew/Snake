@@ -1,0 +1,2 @@
+# Snake
+In this repository i will be submitting a game related project-the famous snake game in form of a console app. I have decided to test my skills and will be working on the project only in my spare time. At the end, the app itself will consist of a fully functioning snake game with a database holding each unique user's record. I will be using Microsofts .Net Core-for the app, and Entity Framework Core-for the database.
