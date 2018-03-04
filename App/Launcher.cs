@@ -6,136 +6,105 @@ public class Launcher
 {
     const short fieldRows = 7;
     const short fieldColumns = 14;
+    const char northArrow = '^';
+    const char southArrow = 'V';
+    const char eastArrow = '>';
+    const char westArrow = '<';
 
     static void Main()
     {
         //Initialize Field
-        var field=InitializeField();
+        var field=Initializer.InitializeField(fieldRows, fieldColumns);
         
         //Initialize Snake
-        var snake = InitializeSnake(field);
+        var snake = Initializer.InitializeSnake(field);
 
         //Initialize Prize
-        var prize = InitializePrizePoint(snake,field);
+        var prize = Initializer.InitializePrizePoint(snake,field,fieldRows,fieldColumns);
 
-        while (true)
+        var highScore = 0;
+        
+        try
         {
-            Console.WriteLine(PrintField(field));
-
-            Console.Write("InputCommand: ");
-            var command = Console.ReadLine();
-
-            if (command.Equals("end"))
-                break;
-
-            var tail = snake.BodyPoints.First();
-            var headPoint = snake.BodyPoints.Last();
-            char directionChar;
-            Point newPoint;
-
-            switch (command)
+            while (true)
             {
-                case "d":
-                    newPoint = new Point(headPoint.pY, (short)(headPoint.pX + 1));
-                    TryMoveSnake(field,snake,headPoint,tail,prize,directionChar = '>', newPoint);
+                Console.WriteLine(PrintField(field));
+
+                Console.Write("InputCommand: ");
+                var command = Console.ReadLine();
+
+                if (command.Equals("end"))
                     break;
 
-                case "a":
-                    newPoint = new Point(headPoint.pY, (short)(headPoint.pX - 1));
-                    TryMoveSnake(field, snake, headPoint, tail, prize, directionChar='<', newPoint);
-                    break;
+                var tail = snake.BodyPoints.First();
+                var headPoint = snake.BodyPoints.Last();
+                Point newPoint;
 
-                case "w":
-                    newPoint = new Point((short)(headPoint.pY - 1), headPoint.pX);
-                    TryMoveSnake(field, snake, headPoint, tail, prize, directionChar='^', newPoint);
-                    break;
+                try
+                {
+                    switch (command)
+                    {
+                        case "d":
+                            newPoint = new Point(headPoint.pY, (short)(headPoint.pX + 1));
+                            Mover.TryMoveSnake(field, snake, headPoint, tail, prize, eastArrow, newPoint);
+                            break;
 
-                case "s":
-                    newPoint = new Point((short)(headPoint.pY + 1), headPoint.pX);
-                    TryMoveSnake(field, snake, headPoint, tail, prize, directionChar='V', newPoint);
-                    break;
+                        case "a":
+                            newPoint = new Point(headPoint.pY, (short)(headPoint.pX - 1));
+                            Mover.TryMoveSnake(field, snake, headPoint, tail, prize, westArrow, newPoint);
+                            break;
 
-                default:
-                    ThrowInvalidInputMessage(command);
+                        case "w":
+                            newPoint = new Point((short)(headPoint.pY - 1), headPoint.pX);
+                            Mover.TryMoveSnake(field, snake, headPoint, tail, prize, northArrow, newPoint);
+                            break;
+
+                        case "s":
+                            newPoint = new Point((short)(headPoint.pY + 1), headPoint.pX);
+                            Mover.TryMoveSnake(field, snake, headPoint, tail, prize, southArrow, newPoint);
+                            break;
+
+                        default:
+                            throw new InvalidInputMove();
+                    }
+                }
+                catch (InvalidInputMove ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.ReadLine();
                     Console.Clear();
                     continue;
-            }
-            if (IsPrizeEaten(snake, prize))
-                prize = InitializePrizePoint(snake, field);
-            else
-                RemoveSnakeTail(snake, field, tail);
+                }
+                
+                if (IsPrizeEaten(snake, prize))
+                {
+                    prize = Initializer.InitializePrizePoint(snake, field, fieldRows, fieldColumns);
+                    highScore++;
+                }
+                else
+                    Mover.RemoveSnakeTail(snake, field, tail);
 
-            Console.Clear();
+                Console.Clear();
+            }
+
+        }
+        catch (SuddenDeathException ex)
+        {
+            Console.WriteLine(ex.Message);
+            Console.WriteLine($"HighScore: {highScore}");
+        }
+        catch (InvalidSnakeBodyCount ex)
+        {
+            Console.WriteLine(ex.Message);
+            Console.WriteLine($"HighScore: {highScore}");
         }
     }
-
-    private static void RemoveSnakeTail(Snake snake, char[,] field, Point tail)
-    {
-        field[tail.pY, tail.pX] = '-';
-        snake.BodyPoints.Remove(tail);
-    }
-
+    
     private static bool IsPrizeEaten(Snake snake,Point prize)
     {
        return snake.BodyPoints.Any(p => p.pX == prize.pX && p.pY == prize.pY);
     }
-
-    private static void TryMoveSnake(char[,] field, Snake snake, Point headPoint,
-        Point tail, Point prize,char directionChar,Point newPoint)
-    {
-        field[headPoint.pY, headPoint.pX] = '8';
-        snake.BodyPoints.Add(newPoint);
-        headPoint = snake.BodyPoints.Last();
-        field[headPoint.pY, headPoint.pX] = directionChar;
-    }
-
-    private static void ThrowInvalidInputMessage(string command)
-    {
-        Console.WriteLine($"The input command \"{command}\" was invalid! " + Environment.NewLine +
-                        "Press any key to continue.");
-        Console.ReadLine();
-    }
-
-    private static Point InitializePrizePoint(Snake snake, char[,] field)
-    {
-        var random = new Random();
-        Point prize;
-        short prizeRow, prizeCol;
-
-        do
-        {
-            prizeRow = (short)random.Next(0, fieldRows);
-            prizeCol = (short)random.Next(0, fieldColumns);
-            prize = new Point(prizeRow, prizeCol);
-        } while (snake.BodyPoints.Any(p => p.pX == prize.pX && p.pY == prize.pY));
-        field[prizeRow, prizeCol] = '$';
-
-        return prize;
-    }
-
-    private static Snake InitializeSnake(char[,] field)
-    {
-        var snake = new Snake();
-        foreach (var point in snake.BodyPoints)
-            field[point.pY, point.pX] = point.Symbol;
-        
-        var headPoint = snake.BodyPoints.Last();
-        field[headPoint.pY, headPoint.pX] = snake.HeadSymbol;
-
-        return snake;
-    }
-
-    private static char[,] InitializeField()
-    {
-        var field= new char[fieldRows, fieldColumns];
-        for (int i = 0; i < fieldRows; i++)
-        {
-            for (int j = 0; j < fieldColumns; j++)
-                field[i, j] = '-';
-        }
-        return field;
-    }
-
+    
     private static string PrintField(char[,] field)
     {
         var sb = new StringBuilder();

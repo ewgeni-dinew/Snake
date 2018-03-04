@@ -19,5 +19,13 @@ public class Snake
             new Point(3,7),
         };
     }
+
+    public void AddPoint(short rows,short columns)
+    {
+        if (this.BodyPoints.Count>=rows*columns-3)
+        {
+            throw new InvalidSnakeBodyCount();
+        }
+    }
 }
 
