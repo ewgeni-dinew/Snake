@@ -13,7 +13,7 @@ public class Mover
             throw new SuddenDeathException();
         }
         field[headPoint.pY, headPoint.pX] = '8';
-        snake.BodyPoints.Add(newPoint);
+        snake.AddPoint(newPoint,(short)field.GetLength(0),(short)field.GetLength(1));
         headPoint = snake.BodyPoints.Last();
         field[headPoint.pY, headPoint.pX] = directionChar;
     }

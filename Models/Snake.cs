@@ -20,12 +20,13 @@ public class Snake
         };
     }
 
-    public void AddPoint(short rows,short columns)
+    public void AddPoint(Point point,short rows, short columns)
     {
         if (this.BodyPoints.Count>=rows*columns-3)
         {
             throw new InvalidSnakeBodyCount();
         }
+        this.BodyPoints.Add(point);
     }
 }
 
