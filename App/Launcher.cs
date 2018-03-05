@@ -14,20 +14,23 @@ public class Launcher
     static void Main()
     {
         //Initialize Field
-        var field=Initializer.InitializeField(fieldRows, fieldColumns);
-        
+        var field = Initializer.InitializeField(fieldRows, fieldColumns);
+
         //Initialize Snake
         var snake = Initializer.InitializeSnake(field);
 
         //Initialize Prize
-        var prize = Initializer.InitializePrizePoint(snake,field,fieldRows,fieldColumns);
+        var prize = Initializer.InitializePrizePoint(snake, field, fieldRows, fieldColumns);
 
-        var highScore = 0;
-        
+        int currentScore = 0;
+
+        var userName = GetUserName();
+
         try
         {
             while (true)
             {
+                Console.Clear();
                 Console.WriteLine(PrintField(field));
 
                 Console.Write("InputCommand: ");
@@ -75,31 +78,62 @@ public class Launcher
                     Console.Clear();
                     continue;
                 }
-                
+
                 if (IsPrizeEaten(snake, prize))
                 {
                     prize = Initializer.InitializePrizePoint(snake, field, fieldRows, fieldColumns);
-                    highScore++;
+                    currentScore++;
                 }
                 else
                     Mover.RemoveSnakeTail(snake, field, tail);
-
-                Console.Clear();
             }
-
         }
         catch (SuddenDeathException ex)
         {
             Console.WriteLine(ex.Message);
-            Console.WriteLine($"HighScore: {highScore}");
+            Console.WriteLine($"Current score: {currentScore}");
         }
         catch (InvalidSnakeBodyCount ex)
         {
             Console.WriteLine(ex.Message);
-            Console.WriteLine($"HighScore: {highScore}");
+            Console.WriteLine($"Current score: {currentScore}");
+        }
+        finally
+        {
+            var snakeDb = new SnakeDbContext();
+            using (snakeDb)
+            {
+                //snakeDb.Database.EnsureDeleted();
+                snakeDb.Database.EnsureCreated();
+
+                var user = snakeDb.ScoreBoards.FirstOrDefault(e=>e.UserName.Equals(userName));
+
+                if (user!=null)
+                {
+                    if (user.HighScore < currentScore)
+                        user.HighScore = currentScore;
+                }
+                else
+                {
+                    user = new ScoreBoard()
+                    {
+                        UserName = userName,
+                        HighScore = currentScore
+                    };
+                    snakeDb.ScoreBoards.Add(user);
+                }
+                snakeDb.SaveChanges();
+            }
         }
     }
-    
+
+    private static string GetUserName()
+    {
+        Console.Write("Input player username: ");
+        string username = Console.ReadLine();
+        return username;
+    }
+
     private static bool IsPrizeEaten(Snake snake,Point prize)
     {
        return snake.BodyPoints.Any(p => p.pX == prize.pX && p.pY == prize.pY);
