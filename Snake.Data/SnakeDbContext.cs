@@ -12,7 +12,7 @@ public class SnakeDbContext:DbContext
     {
     }
 
-    public DbSet<ScoreBoard> ScoreBoards { get; set; }
+    public DbSet<ScoreBoard> ScoreBoard { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-public class Initializer
+public static class Initializer
 {
     public static char[,] InitializeField(short fieldRows,short fieldColumns)
     {
@@ -20,10 +20,10 @@ public class Initializer
     {
         var snake = new Snake();
         foreach (var point in snake.BodyPoints)
-            field[point.pY, point.pX] = point.Symbol;
+            field[point.PY, point.PX] = point.Symbol;
 
         var headPoint = snake.BodyPoints.Last();
-        field[headPoint.pY, headPoint.pX] = snake.HeadSymbol;
+        field[headPoint.PY, headPoint.PX] = snake.HeadSymbol;
 
         return snake;
     }
@@ -40,7 +40,7 @@ public class Initializer
             prizeRow = (short)random.Next(0, fieldRows);
             prizeCol = (short)random.Next(0, fieldColumns);
             prize = new Point(prizeRow, prizeCol);
-        } while (snake.BodyPoints.Any(p => p.pX == prize.pX && p.pY == prize.pY));
+        } while (snake.BodyPoints.Any(p => p.PX == prize.PX && p.PY == prize.PY));
         field[prizeRow, prizeCol] = '$';
 
         return prize;

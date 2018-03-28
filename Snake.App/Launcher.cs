@@ -4,10 +4,10 @@ using System.Text;
 
 public class Launcher
 {
-    const short fieldRows = 7;
-    const short fieldColumns = 14;
+    const short fieldRows = 8;
+    const short fieldColumns = 16;
     const char northArrow = '^';
-    const char southArrow = 'V';
+    const char southArrow = 'v';
     const char eastArrow = '>';
     const char westArrow = '<';
 
@@ -48,22 +48,22 @@ public class Launcher
                     switch (command)
                     {
                         case "d":
-                            newPoint = new Point(headPoint.pY, (short)(headPoint.pX + 1));
+                            newPoint = new Point(headPoint.PY, (short)(headPoint.PX + 1));
                             Mover.TryMoveSnake(field, snake, headPoint, tail, prize, eastArrow, newPoint);
                             break;
 
                         case "a":
-                            newPoint = new Point(headPoint.pY, (short)(headPoint.pX - 1));
+                            newPoint = new Point(headPoint.PY, (short)(headPoint.PX - 1));
                             Mover.TryMoveSnake(field, snake, headPoint, tail, prize, westArrow, newPoint);
                             break;
 
                         case "w":
-                            newPoint = new Point((short)(headPoint.pY - 1), headPoint.pX);
+                            newPoint = new Point((short)(headPoint.PY - 1), headPoint.PX);
                             Mover.TryMoveSnake(field, snake, headPoint, tail, prize, northArrow, newPoint);
                             break;
 
                         case "s":
-                            newPoint = new Point((short)(headPoint.pY + 1), headPoint.pX);
+                            newPoint = new Point((short)(headPoint.PY + 1), headPoint.PX);
                             Mover.TryMoveSnake(field, snake, headPoint, tail, prize, southArrow, newPoint);
                             break;
 
@@ -106,7 +106,7 @@ public class Launcher
                 //snakeDb.Database.EnsureDeleted();
                 snakeDb.Database.EnsureCreated();
 
-                var user = snakeDb.ScoreBoards.FirstOrDefault(e=>e.UserName.Equals(userName));
+                var user = snakeDb.ScoreBoard.FirstOrDefault(e=>e.UserName.Equals(userName));
 
                 if (user!=null)
                 {
@@ -120,7 +120,7 @@ public class Launcher
                         UserName = userName,
                         HighScore = currentScore
                     };
-                    snakeDb.ScoreBoards.Add(user);
+                    snakeDb.ScoreBoard.Add(user);
                 }
                 snakeDb.SaveChanges();
             }
@@ -129,14 +129,20 @@ public class Launcher
 
     private static string GetUserName()
     {
-        Console.Write("Input player username: ");
-        string username = Console.ReadLine();
-        return username;
+        string userName;
+        do
+        {
+            Console.Write("Input player username: ");
+            userName = Console.ReadLine();
+            Console.Clear();
+        } while (string.IsNullOrEmpty(userName)||char.IsDigit(userName[0]));
+
+        return userName;
     }
 
     private static bool IsPrizeEaten(Snake snake,Point prize)
     {
-       return snake.BodyPoints.Any(p => p.pX == prize.pX && p.pY == prize.pY);
+       return snake.BodyPoints.Any(p => p.PX == prize.PX && p.PY == prize.PY);
     }
     
     private static string PrintField(char[,] field)
